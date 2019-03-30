@@ -1,0 +1,24 @@
+var j : int := 10
+bss var j : int := "Hello"
+bss var m : int := 10
+var j : int := 10
+var j : int := 10
+var j : int := 10
+var j : int := 10
+var j : int := 10
+bss var j : int := 10
+
+var j : int := 10
+
+using int st
+
+var k : st := 10
+var l : a := 100
+def func(x: int, y: st) : int = {
+	var j : int := 1000
+	var s : string := "Str"
+}
+
+def main() : int = {
+	var s : string := "FF"
+}

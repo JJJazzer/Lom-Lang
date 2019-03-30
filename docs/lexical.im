@@ -1,0 +1,17 @@
+BEGIN{
+	H1{
+		The lexical of LOM programming language
+	}
+	HYPERLINK[href="basic.html"]{
+		back;
+	}
+	HYPERLINK[href="grammar.html"]{
+		grammar docs;
+	}
+	H2{
+		Keyword
+	}
+	PREDEF{
+		Not finished...
+	}
+}

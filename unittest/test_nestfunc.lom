@@ -1,0 +1,20 @@
+
+
+def hello() : int = {
+	def hello() : int = {
+	}
+	
+	def hsl() : int = {
+		def hello() : int = {
+		}
+	}
+	return 1
+}
+
+def nonret() : void = {
+
+}
+
+def nonretButReturn() : void = {
+	return 1
+}

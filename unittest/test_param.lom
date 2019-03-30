@@ -1,0 +1,4 @@
+
+def hasParam(arg: int, arg1: int, arg2: int) : void = {
+	
+}

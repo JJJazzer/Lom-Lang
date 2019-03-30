@@ -1,0 +1,68 @@
+
+def insert() : int = {
+	var s : int := 1
+	return s
+}
+def insert() : int = {
+	var a : int := 1
+	return a
+}
+
+using int 	size_t
+using size_t  	sz 
+using sz 	ssz
+using str 	strr 
+
+var l : string := 10
+
+tuple t = ("Hello", "H",)
+var i : size_t := 1
+
+struct tt = {i: int, j: int,}
+def error() : string = {
+	i := 10	
+	if (1 < 2) {
+	} elif (3 > 1) {
+	
+	} else {
+	
+	}	
+	while (i > 10) {
+		
+		for (j := 1 to 10) {
+			while (i > 10) {
+			
+			}
+		}
+	}
+	return "Hello" + "Hello" + "H"
+}
+
+def test() : int = {
+	
+	begin 
+		var m : int := 100	
+	
+		var j : int := 10
+	nigeb 
+
+	var m : int := 10
+	return m
+}
+
+def start() : int = {
+	var a : int := -10 plus 10
+	var n : int := 100
+	return 1 
+}
+
+def t() : int = {
+	m := 10
+	n := 100
+	n := &m
+	return i
+}
+
+def args(m: int, a: string) : int = {
+	return m
+}

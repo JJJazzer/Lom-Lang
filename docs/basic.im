@@ -1,0 +1,47 @@
+BEGIN{
+	TITLE{
+		This is a basic documents of lom language.
+	}
+	BODY{
+		H1{
+			Introduction to LOM programming language
+		}
+		HYPERLINK[href="lexical.html"]{
+			lexical docs;
+		}
+		H2{
+			Identifier	
+		}
+		PREDEF{
+			In <b><i>LOM programming language</i></b>, identifier is the same as C. It contains of character, digits and underline.First character can't be digit, other characters can aslo be digit, character, and underline.;
+			Identifier is used to many ways. Such as variable and function definition. For example:;
+			1. var id : int := 10;
+			2. def main() : int;;
+
+			<b>id</b> and <b>main</b> both are identifier. Some strange characters are also be identifier, like "_I_M_Identifier_", "I_M_Identifier_2", etc.
+		}
+		H2{
+			Data Type, Variable and Constant
+		}
+		PREDEF{
+			The basic data type of LOM contains of integer, string and real. And <b>int</b> is represent integer, <b>string</b> is represent string literal, and <b>real</b> is represent float point number.;
+			1. int:    1, 2, 3, etc.;
+			2. string: "This", "is", "a", "literal", etc.;
+			3. real:   1.1, 1.2, 1.3, etc.;;			
+			The variable can be modify, instead constant can't be modify. Variable is a combination identifier with data type.;
+			Such as: var id : int := 10, var id : string := "Hello", etc.;
+		}
+		H2{
+			Arithmetic Operator
+		}
+		PREDEF{
+			This programming language have many operators, plus, minus, times, divide, and mod. 
+		}
+		H2{
+			The keyword of LOM language
+		}
+		H2{
+			The context-free grammar
+		}
+	}
+}
