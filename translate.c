@@ -13,6 +13,7 @@
 #include "include/util.h"
 #include "include/frame.h"
 #include "include/ast.h"
+#include "include/semantic.h"
 #include <stdio.h>
 #include <assert.h>
 
@@ -54,7 +55,7 @@ static Tr_exp Tr_Expr(IR_exp exp);
 static Tr_exp Tr_NonRet(IR_stm nret);
 static Tr_exp Tr_Cond(Tr_patchTab trues, Tr_patchTab falses,
 		IR_stm stm);
-static IR_exp UnExpr(Tr_exp e);
+static IR_exp UnEx(Tr_exp e);
 static IR_stm UnNonRet(Tr_exp e);
 static struct Cond UnCond(Tr_exp e);
 
@@ -226,7 +227,13 @@ Tr_access Tr_AllocLocal(Tr_level lev, bool esc)
 Tr_exp Tr_SimpleVar(Tr_access acc, Tr_level lev)
 {
 	/* The variable is store in frame */ 
-	return Tr_Expr(F_Exp(acc->access, IR_Temp(F_Fp())));
+	return Tr_Expr(F_Exp(acc->access, 
+#ifndef ARCH_x86
+	IR_Temp(F_Fp())
+#else 
+	IR_Temp(F_Bp())
+#endif 
+	));
 }
 
 Tr_exp Tr_AssignExp()
@@ -243,22 +250,54 @@ Tr_exp Tr_VarDec(Tr_access acc, Tr_level lev, Ast_exp init)
 
 }
 
-Tr_exp Tr_GlobalVarDec(S_symbol var, S_symbol type, Ast_exp exp)
+Tr_exp Tr_GlobalVarDec(Tr_access accesss, Tr_level level, Tr_exp exps)
 {
-
-	int i = exp->u.i;
-	return Tr_Expr(IR_Eseq(IR_Seq(IR_Label(Tmp_CustomizeNameLabel(S_Name(var))),
-				IR_Label(Tmp_CustomizeNameLabel(S_Name(type)))),
-				IR_Const(0)));
+	/* */
+	return exps;
 }
 
-Tr_exp Tr_LocalVarDec()
+Tr_exp Tr_LocalVarDec(Tr_access acc, Tr_level lev)
 {
-	return NULL;
+	return Tr_SimpleVar(acc, lev);
 }
 
 Tr_exp Tr_UsingDec(S_symbol type, S_symbol replace)
 {
 	return Tr_NonRet(IR_Seq(IR_Label(Tmp_CustomizeNameLabel(S_Name(type))),
 				IR_Label(Tmp_CustomizeNameLabel(S_Name(replace)))));
+}
+
+Tr_exp Tr_Int(int i)
+{
+	return Tr_Expr(IR_Const(i)); 
+}
+
+Tr_exp Tr_String(string str)
+{
+	return NULL;
+}
+
+Tr_exp Tr_Real(float f)
+{
+	Tr_exp nil = Tr_Expr(NULL);
+	return nil;	
+}
+
+
+Tr_exp Tr_OpExp(Ast_oper op, Sem_expty left, Sem_expty right)
+{
+	switch (op) {
+	case Ast_plus:
+		return Tr_Expr(IR_Binop(IR_plus, UnEx(left->exp), UnEx(right->exp)));
+	case Ast_minus:
+		return Tr_Expr(IR_Binop(IR_minus, UnEx(left->exp), UnEx(right->exp)));
+	case Ast_times:
+		return Tr_Expr(IR_Binop(IR_times, UnEx(left->exp), UnEx(right->exp)));
+	case Ast_div:
+		return Tr_Expr(IR_Binop(IR_div, UnEx(left->exp), UnEx(right->exp)));
+	case Ast_mod:
+		return Tr_Expr(IR_Binop(IR_div, UnEx(left->exp), UnEx(right->exp)));
+	default:
+		return NULL;
+	}
 }

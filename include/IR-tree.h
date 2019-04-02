@@ -27,7 +27,7 @@ struct IR_stmList_ {
 };
 
 typedef enum {
-	IR_plus, IR_minus, IR_mul, IR_div,
+	IR_plus, IR_minus, IR_times, IR_div,
 	IR_and, IR_or, IR_lshift, IR_rshift,
 	IR_xor
 } IR_binop;
@@ -69,12 +69,13 @@ struct IR_exp_ {
 		struct {IR_stm stm; IR_exp exp;} eseq;
 		Tmp_label label;
 		int 	  constant;
+		int       size; 		/* variable size */
 		struct {IR_exp head; IR_expList tail;} call;
 	} u;
 };
 
-extern IR_exp IR_Binop(IR_exp left, IR_binop op, IR_exp right);
-extern IR_exp IR_Mem(IR_exp mem);
+extern IR_exp IR_Binop(IR_binop op, IR_exp left, IR_exp right);
+extern IR_exp IR_Mem(IR_exp mem, int size);
 extern IR_exp IR_Temp(Tmp_temp temp);
 extern IR_exp IR_Eseq(IR_stm stm, IR_exp exp);
 extern IR_exp IR_Name(Tmp_label label);			/* label of constant n */

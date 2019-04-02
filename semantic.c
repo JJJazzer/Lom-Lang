@@ -61,7 +61,7 @@ void Sem_TransProg(Ast_decList decList)
 	 */
 	Env_enventry x = S_LookUp(venv, S_Symbol("start"));
 	if (x == NULL) {
-		fprintf(stderr, WHITE(LIGHT) _NO_FOUND_MAIN_ERR() RESET);
+		fprintf(stderr, _NO_FOUND_MAIN_WARN() RESET);
 		putchar('\n');
 	}
 }
@@ -76,7 +76,7 @@ Sem_expty Sem_TransDec(S_table tenv, S_table venv, Ast_dec dec)
 		if (dec->u.functionDec.ret != NULL) {
 			Env_enventry x = S_LookUp(venv, dec->u.functionDec.func);
 			if (x && x->kind == Env_funcEnv) {
-				Em_Error(dec->pos, RED(LIGHT) "error:" RESET _DEFINED_ERR(
+				Em_Error(dec->pos, RESET _DEFINED_ERR(
 						S_Name(dec->u.functionDec.func)));
 			} else {
 				/* Process with parameters list 
@@ -131,19 +131,16 @@ Sem_expty Sem_TransDec(S_table tenv, S_table venv, Ast_dec dec)
 		/* TO DO: */
 		if (!isReturn) {
 			if (!streq(ret_type, "void"))
-				Em_Error(dec->pos, PURPLE(LIGHT) "warning:" RESET
-						_NORETURN_ERR(S_Name(dec->u.functionDec.func)));
+				Em_Error(dec->pos, _NORETURN_WARN(S_Name(dec->u.functionDec.func)));
 		} else {
 			/* check type of return value */ 
 			if (streq(ret_type, "void"))
-				Em_Error(dec->pos, PURPLE(LIGHT) "warning:"
-						RESET "Void type not require a return expression."); 
+				Em_Error(dec->pos, _RETVAL_ISVOID_ERR()); 
 			else {
 				Env_enventry env = S_LookUp(venv, dec->u.functionDec.func);
 				if (env->u.funcEnv.ret->kind != e->type->kind)
-					Em_Error(dec->pos, PURPLE(LIGHT) "warning:" 
-							RESET _RETVAL_NOMATCH_ERR( 
-							S_Name(dec->u.functionDec.func), S_Name(dec->u.functionDec.ret)));
+					Em_Error(dec->pos, RESET _RETVAL_NOMATCH_ERR( 
+						S_Name(dec->u.functionDec.func), S_Name(dec->u.functionDec.ret)));
 			}
 		}
 		/* Scope ending */
@@ -155,16 +152,15 @@ Sem_expty Sem_TransDec(S_table tenv, S_table venv, Ast_dec dec)
 	case Ast_varDec: {
 		Sem_expty e = Sem_TransExp(tenv, venv, 
 			dec->u.varDec.init);
-
 		if (S_LookUp(venv, dec->u.varDec.var) != NULL) {
-			Em_Error(dec->pos, RED(LIGHT) "error:" RESET _DEFINED_ERR(
+			Em_Error(dec->pos, _DEFINED_ERR(
 				S_Name(dec->u.varDec.var)));
 			break;
 		}
-		
 		if (dec->u.varDec.type == NULL) {
 			/* Variables have no constraint type:
 			 * 	var id = exps 
+			 * Get the e->type 
 			 */
 			S_Insert(venv, dec->u.varDec.var,
 				Env_VarEnv(NULL, e->type));
@@ -173,36 +169,37 @@ Sem_expty Sem_TransDec(S_table tenv, S_table venv, Ast_dec dec)
 			/* Variables have constraint type:
 			 * 	var id : type-id = exps 
 			 */
-			
 			S_symbol tmp = dec->u.varDec.type;
 			S_symbol env = tmp;
-			if (!Sem_IsBasicType(tmp)) {
+			if (!Sem_IsBasicType(tmp)) {	
 				env = S_LookUp(tenv, tmp);
 				while (env != NULL && !Sem_IsBasicType(env)) {
 					env = S_LookUp(tenv, env);
 				}
 				if (env == NULL) {
-					Em_Error(dec->pos, RED(LIGHT) "error:" RESET " Not found type <%s> defined.",
-						S_Name(tmp));
+					Em_Error(dec->pos, _NOFOUND_TYPE_ERR(S_Name(tmp)));
 					break;
 				}
 			}
+#if 0
+			if (!streq(S_Name(dec->u.varDec.type), "real"))
+				printf("%s\n", S_Name(env)); 
+			else 
+				assert(0);
+#endif			
 			if (streq(S_Name(env), "int")) {
 				if (e->type->kind != Ty_int)
-					Em_Error(dec->u.varDec.init->pos,
-						RED(LIGHT) "error:" RESET 
-						_EXPRRET_NOMATCH_ERR(int));
+					Em_Error(dec->u.varDec.init->pos, _EXPRRET_NOMATCH_ERR(int));
 				S_Insert(venv, dec->u.varDec.var,
 					Env_VarEnv(NULL, Ty_Int()));
 				if (parent == NULL)
-					return Sem_Expty(Tr_GlobalVarDec(dec->u.varDec.var,
-							dec->u.varDec.type, dec->u.varDec.init), Ty_Int());
-				return Sem_Expty(Tr_LocalVarDec(), Ty_Int());
+					Cgen_GlobalVarEmit(dec->u.varDec.var, dec->u.varDec.type,
+							e);
+				return Sem_Expty(NULL, Ty_Int());
 
 			} else if (streq(S_Name(env), "string")) {
 				if (e->type->kind != Ty_string)
 					Em_Error(dec->u.varDec.init->pos,
-						RED(LIGHT) "error:" RESET 
 						_EXPRRET_NOMATCH_ERR(string));
 				S_Insert(venv, dec->u.varDec.var,
 					Env_VarEnv(NULL, Ty_String()));
@@ -211,20 +208,17 @@ Sem_expty Sem_TransDec(S_table tenv, S_table venv, Ast_dec dec)
 						dec->u.varDec.init->u.s);
 				*/
 				if (parent == NULL)
-					return Sem_Expty(Tr_GlobalVarDec(dec->u.varDec.var,
-							dec->u.varDec.type, dec->u.varDec.init), Ty_String());
-				return Sem_Expty(Tr_LocalVarDec(), Ty_Int());
+					return Sem_Expty(NULL, Ty_String());
+				return Sem_Expty(NULL, Ty_Int());
 			} else if (streq(S_Name(env), "real")) {
 				if (e->type->kind != Ty_real) 
 					Em_Error(dec->u.varDec.init->pos,
-						RED(LIGHT) "error:" RESET 
 						_EXPRRET_NOMATCH_ERR(real));
 				S_Insert(venv, dec->u.varDec.var,
 					Env_VarEnv(NULL, Ty_Real()));
 				if (parent == NULL)
-					return Sem_Expty(Tr_GlobalVarDec(dec->u.varDec.var,
-							dec->u.varDec.type, dec->u.varDec.init), Ty_Real());
-				return Sem_Expty(Tr_LocalVarDec(), Ty_Real());
+					return Sem_Expty(NULL, Ty_Real());
+				return Sem_Expty(NULL, Ty_Real());
 			
 			}
 		}
@@ -241,7 +235,7 @@ Sem_expty Sem_TransDec(S_table tenv, S_table venv, Ast_dec dec)
 	}
 	case Ast_mainDec: {
 		if (S_LookUp(venv, dec->u.mainDec.main) != NULL) {
-			Em_Error(dec->pos , RED(LIGHT) "error:" RESET _MULTI_MAIN_ERR());
+			Em_Error(dec->pos, RESET _MULTI_MAIN_ERR());
 		} else {
 			S_Insert(venv, dec->u.mainDec.main,
 				Env_FuncEnv(NULL, NULL, NULL, Ty_Int()));
@@ -256,8 +250,7 @@ Sem_expty Sem_TransDec(S_table tenv, S_table venv, Ast_dec dec)
 			S_BeginScope(tenv);
 			Sem_TransExpList(tenv, venv, dec->u.mainDec.body);
 			if (!isReturn)
-				Em_Error(dec->pos, PURPLE(LIGHT) "warning:" RESET
-						_NORETURN_ERR(S_Name(dec->u.mainDec.main)));
+				Em_Error(dec->pos, _NORETURN_WARN(S_Name(dec->u.mainDec.main)));
 			/* EndScope: pop local varibale in function scope */
 			S_EndScope(tenv);
 			S_EndScope(venv);
@@ -271,8 +264,7 @@ Sem_expty Sem_TransDec(S_table tenv, S_table venv, Ast_dec dec)
 		 */
 		S_symbol tstruct = dec->u.structureDec.structt;
 		if (S_LookUp(venv, tstruct) != NULL) {
-			Em_Error(dec->pos, RED(LIGHT) "error:" RESET 
-					_UNDEF_ERR(tstruct));
+			Em_Error(dec->pos, _UNDEF_ERR(tstruct));
 		} else {
 			/* Process with param list */
 
@@ -284,8 +276,7 @@ Sem_expty Sem_TransDec(S_table tenv, S_table venv, Ast_dec dec)
 		/* tuple t = {Ast_exp(), Ast_exp(), ...} */
 		S_symbol ttuple = dec->u.tupleDec.tuple;
 		if (S_LookUp(venv, ttuple) != NULL) 
-			Em_Error(dec->pos, RED(LIGHT) "error:" RESET
-					_UNDEF_ERR(ttuple));
+			Em_Error(dec->pos, _UNDEF_ERR(ttuple));
 		S_Insert(venv, ttuple,
 				Env_VarEnv(NULL, Ty_Tuple()));
 		break;		   
@@ -314,18 +305,18 @@ Sem_expty Sem_TransExp(S_table tenv, S_table venv, Ast_exp exp)
 	case Ast_intExp:
 		/* IR_Const(i) Tr_Expr( */
 		/* Future: return Sem_Expty(Tr_Expr(IR_Const(exp->u.i)), Ty_Int()); */
-		return Sem_Expty(NULL, Ty_Int());
+		return Sem_Expty(Tr_Int(exp->u.i), Ty_Int());
 	case Ast_strExp:
-		return Sem_Expty(NULL, Ty_String());
+		return Sem_Expty(Tr_String(exp->u.s), Ty_String());
 	case Ast_realExp:
-		return Sem_Expty(NULL, Ty_Real());
+		return Sem_Expty(Tr_Real(exp->u.r), Ty_Real());
 	case Ast_nilExp:
 		return Sem_Expty(NULL, Ty_Nil());
 	case Ast_callExp: {
 		/* Process with function(function(Nonvoid ret type) is diffirent to procedure(Void ret type) */
 		Env_enventry x = S_LookUp(venv, exp->u.callExp.func);
 		if (x == NULL) {
-			Em_Error(exp->pos, RED(LIGHT) "error:" RESET _UNDEF_ERR(S_Name(exp->u.callExp.func))); 
+			Em_Error(exp->pos, _UNDEF_ERR(S_Name(exp->u.callExp.func))); 
 		} else if (x && x->kind == Env_funcEnv) {
 			if (x->u.funcEnv.ret == Ty_Void()) {
 				Em_Error(exp->pos, RED(LIGHT) "error:" RESET "Symbol <%s> is a procedure, have no return value");
@@ -343,23 +334,26 @@ Sem_expty Sem_TransExp(S_table tenv, S_table venv, Ast_exp exp)
 		if (op == Ast_plus) {
 			switch (left->type->kind) {
 			case Ty_int:
-				if (right->type->kind != Ty_int)
-					Em_Error(exp->u.opExp.right->pos,
-						RED(LIGHT) "error:" RESET
-						_EXPRVAL_NOMATCH_ERR(int));
-				return Sem_Expty(NULL, Ty_Int());
+				if (right->type->kind != Ty_int) {
+					Em_Error(exp->u.opExp.right->pos, _EXPRVAL_NOMATCH_ERR(int));
+					return Sem_Expty(NULL, Ty_Int());
+				} else { 
+					return Sem_Expty(Tr_OpExp(op, left, right), Ty_Int());
+				}
 			case Ty_string:
-				if (right->type->kind != Ty_string)
-					Em_Error(exp->u.opExp.right->pos,
-						RED(LIGHT) "error:" RESET
-						_EXPRVAL_NOMATCH_ERR(string));
-				return Sem_Expty(NULL, Ty_String());
+				if (right->type->kind != Ty_string) {
+					Em_Error(exp->u.opExp.right->pos, _EXPRVAL_NOMATCH_ERR(string));
+					return Sem_Expty(NULL, Ty_String());
+				} else {
+					return Sem_Expty(Tr_OpExp(op, left, right), Ty_String());
+				}
 			case Ty_real:
-				if (right->type->kind != Ty_real)
-					Em_Error(exp->u.opExp.right->pos,
-						RED(LIGHT) "error:" RESET 
-						_EXPRVAL_NOMATCH_ERR(real));
-				return Sem_Expty(NULL, Ty_Real());
+				if (right->type->kind != Ty_real) {
+					Em_Error(exp->u.opExp.right->pos, _EXPRVAL_NOMATCH_ERR(real));
+					return Sem_Expty(NULL, Ty_Real());
+				} else {
+					return Sem_Expty(Tr_OpExp(op, left, right), Ty_Real());
+				}
 			default:
 				Em_Error(exp->u.opExp.left->pos, RED(LIGHT) "error:" RESET " The value of type can't require do arith.");
 				return Sem_Expty(NULL, Ty_Int());
@@ -368,9 +362,7 @@ Sem_expty Sem_TransExp(S_table tenv, S_table venv, Ast_exp exp)
 			switch (left->type->kind) {
 			case Ty_int:
 				if (right->type->kind != Ty_int)
-					Em_Error(exp->u.opExp.right->pos,
-						RED(LIGHT) "error:" RESET 
-						_EXPRVAL_NOMATCH_ERR(int));
+					Em_Error(exp->u.opExp.right->pos, _EXPRVAL_NOMATCH_ERR(int));
 				return Sem_Expty(NULL, Ty_Int());
 			case Ty_string:
 				Em_Error(exp->u.opExp.right->pos,
@@ -399,19 +391,15 @@ Sem_expty Sem_TransExp(S_table tenv, S_table venv, Ast_exp exp)
 			
 			if (e->type->kind != x->u.varEnv.type->kind) {
 				if (x->u.varEnv.type->kind == Ty_int) 
-					Em_Error(exp->u.assignExp.var->pos, RED(LIGHT) "error:" RESET 
-							_EXPRVAL_NOMATCH_ERR(int));
+					Em_Error(exp->u.assignExp.var->pos, _EXPRVAL_NOMATCH_ERR(int));
 				else if (x->u.varEnv.type->kind == Ty_string)
-					Em_Error(exp->u.assignExp.var->pos, RED(LIGHT) "error:" RESET 
-							_EXPRVAL_NOMATCH_ERR(string));
+					Em_Error(exp->u.assignExp.var->pos, _EXPRVAL_NOMATCH_ERR(string));
 				else if (x->u.varEnv.type->kind == Ty_real)
-					Em_Error(exp->u.assignExp.var->pos, RED(LIGHT) "error:" RESET 
-							_EXPRVAL_NOMATCH_ERR(real));
+					Em_Error(exp->u.assignExp.var->pos, _EXPRVAL_NOMATCH_ERR(real));
 			}
 			return Sem_Expty(NULL, actual_ty(x->u.varEnv.type)); 
 		} else { 
-			Em_Error(exp->u.assignExp.var->pos, RED(LIGHT) "error:" RESET _UNDEF_ERR(
-						S_Name(exp->u.assignExp.var->u.simpleVar.name)));
+			Em_Error(exp->u.assignExp.var->pos, RESET _UNDEF_ERR(S_Name(exp->u.assignExp.var->u.simpleVar.name)));
 			return Sem_Expty(NULL, Ty_Int());
 		}
 		break;
@@ -462,9 +450,9 @@ Sem_expty Sem_TransVar(S_table tenv, S_table venv, Ast_var var)
 	case Ast_simpleVar: {
 		Env_enventry x = S_LookUp(venv, var->u.simpleVar.name);
 		if (x && x->kind == Env_varEnv) {
-			return Sem_Expty(NULL, actual_ty(x->u.varEnv.type));
+			return Sem_Expty(Tr_SimpleVar(Tr_AllocLocal(parent, TRUE), parent), actual_ty(x->u.varEnv.type));
 		} else {
-			Em_Error(var->pos, RED(LIGHT) "error:" RESET _UNDEF_ERR(S_Name(var->u.simpleVar.name)));
+			Em_Error(var->pos, RESET _UNDEF_ERR(S_Name(var->u.simpleVar.name)));
 			return Sem_Expty(NULL, Ty_Int());
 		}
 		break;		    
@@ -535,8 +523,9 @@ static bool Sem_IsBasicType(S_symbol type)
 	char *t = S_Name(type);
 	int i;
 	for (i = 0; i < (int) ARRLENG(basic_type); i++) {
-		if (streq(t, basic_type[i]))
+		if (streq(t, basic_type[i])) {
 			return 1;
+		}
 	}
 	return 0;
 }
@@ -547,7 +536,6 @@ S_symbol SearchTenvForUsing(S_table tenv, S_symbol tmp, Ast_dec dec)
 	while (env != NULL && !Sem_IsBasicType(env)) 
 		env = S_LookUp(tenv, env);
 	if (env == NULL) 
-		Em_Error(dec->u.functionDec.args->head->pos, RED(LIGHT) "error:" RESET " Not found type <%s> defined.",
-							S_Name(tmp));
+		Em_Error(dec->u.functionDec.args->head->pos, _NOFOUND_TYPE_ERR(S_Name(tmp)));
 	return env;
 }

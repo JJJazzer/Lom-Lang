@@ -13,6 +13,8 @@
 #include "util.h"
 #include "frame.h"
 #include "ast.h"
+#include "semantic.h"
+
 /* *_ex: expression
  * *_nx: none result
  * *_cx: condition statement
@@ -34,10 +36,15 @@ extern Tr_level Tr_NewLevel(Tr_level parent, Tmp_label name,
 extern Tr_accessList Tr_Args(Tr_level level);
 extern Tr_access Tr_AllocLocal(Tr_level level, bool escape);
 
+extern Tr_exp Tr_Int(int i);
+extern Tr_exp Tr_String(string str);
+extern Tr_exp Tr_Real(float r);
 extern Tr_exp Tr_SimpleVar(Tr_access access, Tr_level level);
-extern Tr_exp Tr_GlobalVarDec(S_symbol var, S_symbol type, Ast_exp exp);
-extern Tr_exp Tr_LocalVarDec();
+extern Tr_exp Tr_GlobalVarDec(Tr_access access, Tr_level level, Tr_exp exps);
+extern Tr_exp Tr_LocalVarDec(Tr_access acc, Tr_level lev);
 extern Tr_exp Tr_UsingDec(S_symbol type, S_symbol name);
+extern Tr_exp Tr_OpExp(Ast_oper op, struct Sem_expty_ *left, struct Sem_expty_ *right);
+
 extern void Tr_ProcEntryExit(Tr_level level, Tr_exp body, Tr_accessList formals);
 extern F_fragList Tr_GetResult(void);
 #endif

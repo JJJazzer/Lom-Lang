@@ -31,7 +31,12 @@ Tmp_label F_Name(F_frame f);
 F_accessList F_Formals(F_frame f);
 F_access F_AllocLocal(F_frame f, bool escape);
 
+#ifndef ARCH_x86
 Tmp_temp F_Fp(void);
+#else
+Tmp_temp F_Bp(void);
+#endif
+
 Tmp_temp F_Sp(void);
 Tmp_temp F_Rv(void);
 extern const int F_wordSize;

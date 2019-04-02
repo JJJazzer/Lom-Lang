@@ -7,6 +7,10 @@
  * Module's function: The frame of x86. 
  */
 
+#ifndef ARCH_x86
+#error Your machine is not x86 architecture
+#endif 
+
 #include "include/frame.h"
 #include "include/tmplabel.h"
 #include "include/IR-tree.h"
@@ -83,16 +87,25 @@ F_access F_AllocLocal(F_frame f, bool escape)
 IR_exp F_Exp(F_access acc, IR_exp framePtr)
 {
 	if (acc->kind == F_inFrame)
-		return IR_Mem(IR_Binop(framePtr, IR_plus, IR_Const(acc->u.offset)));
+		return IR_Mem(IR_Binop(IR_plus, framePtr, IR_Const(acc->u.offset)), 0);
 	else
 		return NULL;
 }
 
+#ifndef ARCH_x86 
 Tmp_temp F_Fp(void)
 {
 	Tmp_temp t = Tmp_NewTemp();
 	return t;
 }
+#else 
+Tmp_temp F_Bp(void)
+{
+	Tmp_temp t = Tmp_NewTemp();
+	return t;
+}
+#endif 
+
 /* Offset of frame pointer */
 
 F_access F_InFrame(int offset)

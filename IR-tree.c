@@ -70,7 +70,7 @@ IR_stm IR_Exp(IR_exp exp)
 	return ts;
 }
 
-IR_exp IR_Binop(IR_exp left, IR_binop op, IR_exp right)
+IR_exp IR_Binop(IR_binop op, IR_exp left, IR_exp right)
 {
 	IR_exp te;
 	te = checked_malloc(sizeof(*te));
@@ -81,12 +81,13 @@ IR_exp IR_Binop(IR_exp left, IR_binop op, IR_exp right)
 	return te;
 }
 
-IR_exp IR_Mem(IR_exp mem)
+IR_exp IR_Mem(IR_exp mem, int size)
 {
 	IR_exp te;
 	te = checked_malloc(sizeof(*te));
 	te->kind = IR_mem;
 	te->u.mem = mem;
+	te->u.size = size;
 	return te;
 }
 
@@ -127,12 +128,12 @@ IR_exp IR_Const(int constant)
 	return te;
 }
 
-IR_exp IR_Call(IR_exp head, IR_expList tail)
+IR_exp IR_Call(IR_exp func, IR_expList paramList)
 {
 	IR_exp te;
 	te = checked_malloc(sizeof(*te));
 	te->kind = IR_call;
-	te->u.call.head = head;
-	te->u.call.tail = tail;
+	te->u.call.head = func;
+	te->u.call.tail = paramList;
 	return te;
 }

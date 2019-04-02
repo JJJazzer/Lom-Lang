@@ -107,7 +107,7 @@ NOT 		{adjust(); return NOT;}
 
 nil 		{adjust(); return NIL;}
 {digit}+   	{adjust(); yylval.num = atoi(yytext); return INT;}
-{int}*\.{int}[e|E]?-?{int}* 		{adjust(); yylval.real = atof(yytext);return REAL;}
+{int}*\.{int}[e|E]?-?{int}* 		{adjust(); yylval.real = atof(yytext); return REAL;}
 \"{ext_string}+\"				{adjust(); yylval.str = String(yytext); return STRING;}
 {string}+{string}*{digit}*		{adjust(); yylval.id = String(yytext); return ID;}
 .		{adjust(); continue;}

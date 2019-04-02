@@ -9,7 +9,9 @@ OBJS := lex.yy.o y.tab.o ast.o util.o symbol.o table.o\
 	errmsg.o types.o env.o util.o semantic.o translate.o \
 	tmplabel.o frame_x86.o IR-tree.o escape.o assem.o codegen.o \
 	main.o
-CFLAGS += -Iinclude
+
+ARCH := x86
+CFLAGS += -Iinclude -DARCH_$(ARCH)
 INTERPRETER = python$(PYTHON_VERSON)
 PYTHON_VERSON := 3
 DIRS := Tools docs 
@@ -18,7 +20,7 @@ vpath include
 
 build: lomtC Tools docs 
 lomtC: $(OBJS)
-	$(CC) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@
 $(OBJS): lex.yy.c ast.c y.tab.c util.c symbol.c table.c\
 	 errmsg.c main.c
 lex.yy.c:

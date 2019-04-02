@@ -9,6 +9,7 @@
 #include "include/translate.h"
 #include "include/assem.h"
 #include "include/IR-tree.h"
+#include "include/semantic.h"
 
 extern Tr_level lev;
 void Cgen_Emit(FILE *out, char *instr, ...)
@@ -20,6 +21,12 @@ void Cgen_Emit(FILE *out, char *instr, ...)
 	fprintf(out, "\n");
 }
 
+void Cgen_GlobalVarEmit(S_symbol name, S_symbol type, Sem_expty e)
+{
+	char s[200];
+	sprintf(s, "%s:\n\t.%s: %s", S_Name(name), S_Name(type), "0");
+	Cgen_Emit(out, s);
+}
 void CodeGen()
 {
 }

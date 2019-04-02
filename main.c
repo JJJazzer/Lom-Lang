@@ -98,6 +98,9 @@ static void SelectItems(int argc, char *argv[])
 		case 'h':
 			Try_help();
 			exit(0);	/* Normal exited */
+		case ':':
+			Try_help();
+			exit(0);
 		case '?':
 			fprintf(stderr, "Unknown arguments, please try to use --help command.\n");
 			exit(-1);

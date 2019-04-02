@@ -49,7 +49,7 @@ void Em_Error(int pos, char *msg, ...)
 		num--;
 	}
 	if (line)
-		fprintf(stderr, WHITE(LIGHT) "lines: %d, position: %d: " RESET, num, pos - line->pos);
+		fprintf(stderr, WHITE(LIGHT) "lines:%d.position:%d: " RESET, num, pos - line->pos);
 	va_start(ap, msg);
 	vfprintf(stderr, msg, ap);
 	va_end(ap);

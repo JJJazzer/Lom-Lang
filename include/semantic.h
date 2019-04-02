@@ -14,11 +14,11 @@
 
 typedef struct Sem_expty_ *Sem_expty;
 struct Sem_expty_ {
-	Tr_exp exp;
+	struct Tr_exp_ *exp;
 	Ty_type type;
 };
 
-extern Sem_expty Sem_Expty(Tr_exp exp, Ty_type type);
+extern Sem_expty Sem_Expty(struct Tr_exp_ *exp, Ty_type type);
 extern void Sem_TransProg(Ast_decList decList);
 extern Sem_expty Sem_TransDec(S_table tenv, S_table venv, Ast_dec dec);
 extern Sem_expty Sem_TransExpList(S_table tenv, S_table venv, Ast_expList expList);
